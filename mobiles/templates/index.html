@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+</head>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<script src="http://libs.baidu.com/jqueryui/1.10.2/jquery-ui.min.js"></script>
+<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<body>
+
+{#手机信息展示框#}
+<div style="text-align: center">
+    <table border="1">
+        <tr>
+            <th>手机名</th>
+            <th>借用状态</th>
+            <th>当前借用人</th>
+            <th>操作</th>
+        </tr>
+        {% for m in mobiles %}
+            <tr>
+                <th>{{ m.modelType }}</th>
+                {% if m.BorrowStatus == True %}
+                    <th>可借</th>
+                {% endif %}
+                {% if m.BorrowStatus == False %}
+                    <th>不可借</th>
+                {% endif %}
+
+                <th>{{ m.BorrowPeopleName }}</th>
+                <th>
+                    {% if m.BorrowStatus == False %}
+                        <button id="return_btn" onclick="returnMobile(this)" value={{ m.id }}>归还</button>
+                    {% endif %}
+                    {% if m.BorrowStatus == True and identity == 2 %}
+                        <button id="borrow_btn" onclick="usersList(this)" value={{ m.id }}>借出</button>
+                    {% endif %}
+                    <button onclick="mobileRecordList(this)" value={{ m.id }}>借用记录</button>
+                </th>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{#确认归还框#}
+<div id="dialogId" title="确认归还？">
+    <div style="text-align:center;">
+    </div>
+</div>
+
+{#确认借用框#}
+<div id="isBorrowdialogId" title="是否借用？">
+    <div style="text-align:center;">
+    </div>
+</div>
+
+{#借用记录框#}
+<div id="recordDialog" title="借用记录">
+    <div style="text-align:center;">
+        <table border="0">
+            <thead>
+            <tr>
+                <th>操作时间</th>
+                <th></th>
+                <th>借用人</th>
+                <th>归还人</th>
+            </tr>
+            </thead>
+            <tbody id="resultTable">
+
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+
+{#用户选择框#}
+<div id="usersDialog" title="用户列表">
+    <div style="text-align:center;">
+        <table border="0">
+            <thead>
+            <tr>
+                <th>用户名称</th>
+                <th></th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="usersResultTable">
+
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    var static_url = 'http://10.1.0.84:8000/';
+    $(document).ready(function () {
+        //隐藏信息输入框
+        $("#dialogId").hide();
+        $("#recordDialog").hide();
+        $("#usersDialog").hide();
+
+    });
+
+
+    function returnMobile(obj) {
+        var mid = obj.value;
+        $("#dialogId").dialog({
+            draggalbe: true,
+            minWidth: 400,
+            buttons: {
+                "确认": function () {
+
+                    $.ajax({
+                        url: static_url + 'toReturn/',
+                        type: 'POST',
+                        data: {u_token: '{{token}}', mid: mid},
+                        dataType: 'json',
+                        timeout: 10000,
+                        success: function (result) {
+
+                            location.reload()
+                            alert(result.message)
+                        }
+
+                    });
+                    $(this).dialog("destroy");
+                },
+                "取消": function () {
+                    $(this).dialog("destroy");
+                }
+            }
+        });
+    }
+
+    function borrowMobile(a,b) {
+        var mid = a;
+        var token=b;
+        $("#isBorrowdialogId").dialog({
+            draggalbe: true,
+            minWidth: 400,
+            buttons: {
+                "确认": function () {
+
+                    $.ajax({
+                        url: static_url + 'toBorrowNew/',
+                        type: 'POST',
+                        data: {u_token: '{{token}}', mid: mid,b_token:token},
+                        dataType: 'json',
+                        timeout: 10000,
+                        success: function (result) {
+                            location.reload()
+                            alert(result.message)
+                        }
+
+                    });
+                    $(this).dialog("destroy");
+                },
+                "取消": function () {
+                    $(this).dialog("destroy");
+                }
+            }
+        });
+    }
+
+    function getLocalTime(nS) {
+        return new Date(parseInt(nS)).toLocaleString().replace(/:\d{1,2}$/, ' ');
+    }
+
+
+    function mobileRecordList(obj) {
+        var mid = obj.value;
+        $.ajax({
+            url: static_url + 'getMobileBorroeRecord/',
+            type: 'POST',
+            data: {u_token: '{{token}}', mid: mid},
+            dataType: 'json',
+            timeout: 10000,
+            success: function (result) {
+
+                $("#resultTable").empty();
+                var data = result.mobileBorrowRecordList;
+                for (var i = 0; i < data.length; ++i) {
+                    var tr;
+                    tr = '<td>' + getLocalTime(data[i].BorrowTime) + '</td>' + '<td>' + '</td>' + '<td>'+data[i].BorrowPeopleName+'</td>' + '<td>' + data[i].ReturnPeopleName + '</td>';
+                    $('#resultTable').append('<tr>' + tr + '</tr>');
+                }
+
+                $("#recordDialog").dialog({
+                    draggalbe: true,
+                    minWidth: 600,
+                    buttons: {
+                        "取消": function () {
+                            $(this).dialog("destroy");
+                        }
+                    }
+                });
+
+
+            }
+
+        });
+    }
+
+
+
+{# 用户列表展示#}
+    function usersList(obj) {
+        var mid = obj.value;
+        $.ajax({
+            url: static_url + 'getUserListInfo/',
+            type: 'POST',
+            data: {u_token: '{{token}}', mid: mid},
+            dataType: 'json',
+            timeout: 10000,
+            success: function (result) {
+
+                $("#usersResultTable").empty();
+                var data = result.usersList;
+
+                for (var i = 0; i < data.length; ++i) {
+                    var tr;
+                    tr = '<td>' + data[i].name + '</td>' + '<td>' + '</td>' +
+                            '<td><button id="borrow_btn" onclick="borrowMobile('
+                            +'\''+mid+'\''
+                            +','
+                            + '\''+data[i].u_token+'\''
+                            + ')">借用</button></td>' ;
+                    $('#usersResultTable').append('<tr>' + tr + '</tr>');
+                }
+
+                $("#usersDialog").dialog({
+                    draggalbe: true,
+                    minWidth: 600,
+                    buttons: {
+                        "取消": function () {
+                            $(this).dialog("destroy");
+                        }
+                    }
+                });
+
+
+            }
+
+        });
+    }
+</script>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</html>

@@ -1,0 +1,89 @@
+<!--login/templates/login/login.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登录</title>
+    <style>
+        body{
+            background-color: rgb(235, 239, 242);
+            font-size: 16px;
+        }
+        .login{
+            width: 340px;
+            height: 280px;
+            margin: 50px auto;
+            border:1px solid rgb(203, 219,218);
+        }
+        .login form{
+            width: 340px;
+            background-color: rgb(254,254,254);
+        }
+        .login .forms{
+            width: 300px;
+            margin: 0 auto;
+            padding:10px 0 20px 0;
+        }
+        .login label{
+            display: inline-block;
+            width: 300px;
+            padding-bottom: 8px;
+        }
+        .login input{
+            width: 300px;
+            height: 35px;
+            border:none;
+            outline: none;
+            border:1px solid rgb(203, 219,218);
+            background-color: #fff;
+            font-size: 18px;
+            text-indent: 6px;
+            border-radius: 5px;
+        }
+        .btn{
+            width: 340px;
+            padding: 15px 0;
+            border-top: 1px solid #ccc;
+            background-color:rgb(240,245,248);
+        }
+        .btn div{
+            overflow: hidden;
+            width: 300px;
+            margin: 0 auto;
+        }
+        .btn button{
+            float:right;
+            padding:8px 16px;
+            background: rgb(157, 211, 239);
+            border:1px solid #ccc;
+            border-radius: 5px;
+            color: #fff;
+        }
+        .btn a{
+            float:left;
+            padding: 5px 0;
+            text-decoration: none;
+            color:#ccc;
+        }
+    </style>
+</head>
+
+    <div class="login">
+        <form action="" method="post"  enctype="multipart/form-data">
+           <div class="forms">
+
+                {% csrf_token %}
+                {{uf.as_p}}
+           </div>
+            <div class="btn">
+                <div>
+                    <a href="#">忘记密码?找管理员，点这没用！</a>
+                    <a><button type ='submit'>登录</button></a>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

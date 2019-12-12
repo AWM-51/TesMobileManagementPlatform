@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MobileDetails</title>
+</head>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<script src="http://libs.baidu.com/jqueryui/1.10.2/jquery-ui.min.js"></script>
+<body>
+<table border="0">
+<tr>
+    <th>借用时间</th>
+    <th>借用人</th>
+    <th>归还时间</th>
+    <th>归还人</th>
+</tr>
+    {% for record in result.mobileBorrowRecordList %}
+    <tr>
+    <th>record.BorrowTime</th>
+    <th>record.BorrowPeopleName</th>
+    <th>record.ReturnTime</th>
+    <th>record.ReturnPeopleName</th>
+    </tr>
+    {% endfor %}
+    </table>
+</body>
+</html>

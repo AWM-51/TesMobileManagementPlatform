@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>mobileIndex</title>
+</head>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="http://libs.baidu.com/jqueryui/1.10.2/jquery-ui.min.js"></script>
+
+<body>
+
+手机名：
+{{ GetMobileInfo.modelType }}
+<br><br><br>
+手机状态：<h3 id='m_status'></h3>
+当前拥有人：
+<h3 id="m_b_people"></h3>
+</br>
+<h3 id="ntfText"></h3>
+<button id="m_btn" onclick="showDialog()">借用</button>
+
+
+
+
+<script type="text/javascript">
+{% if GetMobileInfo.BorrowStatus == True %}
+    document.getElementById('m_status').textContent='可借';
+    $("#m_btn").attr("disabled",false);
+    document.getElementById('m_b_people').textContent="{{ GetMobileInfo.BorrowPeopleName }}";
+
+{% endif %}
+
+{% if GetMobileInfo.BorrowStatus == False%}
+    $("#m_btn").attr("disabled",true);
+    document.getElementById('m_status').textContent='已借出';
+    document.getElementById('m_b_people').textContent="{{ GetMobileInfo.BorrowPeopleName }}";
+
+
+{% endif %}
+</script>
+
+
+<div id="dialogId" title="口令输入" >
+    <div style="text-align:center;">
+      <label >请输入口令：</label>
+      <input type="text" id="token">
+    </div>
+</div>
+<script type="text/javascript">
+    var static_url='http://10.1.0.84:8000/';
+    $(document).ready(function(){
+  //隐藏信息输入框
+  $("#dialogId").hide();
+});
+
+//这里为显示窗口的js代码，可以新建一个按钮来触发
+function showDialog(){
+  $("#dialogId").dialog({
+    //height:300,
+    //width:200,
+    //modal:true,
+
+    draggalbe:true,
+    minWidth:400,
+    buttons:{
+      "确认":function(){
+          var u_token = $('#token').val();
+            $.ajax({
+        url: static_url+'toBorrow/',
+        type: 'POST',
+        data: {mid:{{mid}},u_token:u_token},
+        dataType: 'json',
+        timeout: 10000,
+        success: function(result) {
+        if ( result.GetMobileInfo.BorrowStatus == false ) {
+            $("#m_status").html('已借出');
+            $("#m_btn").attr("disabled",true);
+            $('#m_b_people').html(result.GetMobileInfo.BorrowPeopleName)
+
+        }else if(result.GetMobileInfo.BorrowStatus == true){
+            $("#m_status").html('可借');
+            $("#m_btn").attr("disabled",false);
+            $('#m_b_people').html(result.GetMobileInfo.BorrowPeopleName)
+
+        }
+            alert(result.message)
+        }
+
+
+       });
+          $(this).dialog("destroy");
+      },
+      "取消":function(){
+        $(this).dialog("destroy");
+      }
+    }
+  });
+  //$("#consignmentSender").val($("#eth_account").val());
+}
+</script>
+</body>
+</html>

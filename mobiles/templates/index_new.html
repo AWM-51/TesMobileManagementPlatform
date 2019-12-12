@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>测试机借用</title>
+
+{#    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>#}
+    <script type="text/javascript" src="../../static/js/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+    <script src="http://libs.baidu.com/jqueryui/1.10.2/jquery-ui.min.js"></script>
+
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+{#    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">#}
+    <link type="text/css" rel="stylesheet" href="../../static/css/bootstrap.min.css">
+
+    <!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+    <link type="text/css" rel="stylesheet" href="../../static/css/bootstrap-theme.min.css">
+{#    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">#}
+
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script type="text/javascript" src="../../static/js/bootstrap.min.js" ></script>
+{#    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"  crossorigin="anonymous"></script>#}
+</head>
+<body>
+<div class=" jumbotron">
+    <h1>HuiJie
+        <small>测试机借用</small>
+    </h1>
+</div>
+<div class="row">
+    <div class="col-md-4 col-xs-3">
+    </div>
+    <div class="col-md-4 col-xs-3">
+    </div>
+    <div class="col-md-4 col-xs-6">
+        <div class="form-group">
+            <select type="input" class="multipleSelect singleSelect form-control"
+                    style="width:50%;" id="option_select"
+                    data-live-search="true" name="option_select">
+                <option value=0>全部</option>
+                <option value=1>可借</option>
+                <option value=2>不可借</option>
+                <option value=3>申请中</option>
+                <option value=4>安卓</option>
+                <option value=5>iOS</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-2 col-xs-1">
+    </div>
+
+    <div class="col-md-8 col-xs-10" id="Showmobiles">
+
+        {% for m in mobiles %}
+
+            <div class="col-sm-6 col-md-4">
+                <div class="thumbnail">
+                    <img src="../../static/images/tc233.jpg" alt="...">
+                    <div class="caption">
+                        <h3>{{ m.modelType }}</h3>
+                        <h4>系统：{{ m.DType }}</h4>
+                        <h4>版本号：{{ m.SysVersion }}</h4>
+                        {% if m.BorrowStatus == True %}
+                            {% if identity == 1 %}
+                                {% if m.applyUserid == 0 %}
+                                    <p><a href="#" class="btn btn-primary" role="button"
+                                          onclick="applyMobile({{ m.id }})"> 可借 </a></p>
+                                {% endif %}
+                                {% if m.applyUserid != 0 %}
+                                    <p><a href="#" class="btn btn-danger" role="button"> 申请中 </a>
+                                        <a href="#" class="btn btn-default" role="button"> {{ m.applyUserName }} </a>
+                                    </p>
+                                {% endif %}
+                            {% endif %}
+                            {% if identity == 2 %}
+                                <p><a href="#" class="btn btn-success" role="button" id="borrow_btn"
+                                      onclick="usersList({{ m.id }})"> 派机 </a>
+                                    {% if m.applyUserid != 0 %}
+                                        <a href="#" class="btn btn-info" role="button" id="applying_btn"
+                                           onclick="agreeApplyBorrowMobile({{ m.id }},{{ m.applyUserid }})"> {{ m.applyUserName }}申请ing </a>
+                                    {% endif %}
+                                </p>
+
+                            {% endif %}
+                        {% endif %}
+
+                        {% if m.BorrowStatus == False %}
+                            {% if identity == 1 %}
+
+                                <p><a href="#" class="btn btn-danger" role="button"> 已借 </a>
+                                    <a href="#" class="btn btn-default" role="button"> {{ m.BorrowPeopleName }} </a>
+                                </p>
+
+
+                            {% endif %}
+                            {% if identity == 2 %}
+                                <p><a href="#" class="btn btn-danger" role="button" id="return_btn"
+                                      onclick="returnMobile({{ m.id }})"> 归还 </a>
+                                    <a href="#" class="btn btn-default" role="button"> {{ m.BorrowPeopleName }} </a>
+                                </p>
+                            {% endif %}
+                        {% endif %}
+
+                        <p><a href="#" class="btn btn-info" role="button"
+                              onclick="mobileRecordList({{ m.id }})">借还记录</a></p>
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="col-md-2 col-xs-1">
+    </div>
+</div>
+
+
+{#确认归还框#}
+<div id="dialogId" title="确认归还？">
+    <div style="text-align:center;">
+    </div>
+</div>
+
+{#确认借用框#}
+<div id="isBorrowdialogId" title="是否借用？">
+    <div style="text-align:center;">
+    </div>
+</div>
+
+{#确认申请框#}
+<div id="isApplydialogId" title="是否借用？">
+    <div style="text-align:center;">
+    </div>
+</div>
+
+{#同意申请框#}
+<div id="isAgreeApplydialogId" title="是否同意？">
+    <div style="text-align:center;">
+    </div>
+</div>
+
+{#借用记录框#}
+<div id="recordDialog" title="借用记录">
+    <div style="text-align:center;">
+        <table border="0">
+            <thead>
+            <tr>
+                <th>操作时间</th>
+                <th></th>
+                <th>借用人</th>
+                <th>归还人</th>
+            </tr>
+            </thead>
+            <tbody id="resultTable">
+
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+
+{#用户选择框#}
+<div id="usersDialog" title="用户列表">
+    <div style="text-align:center;">
+        <table border="0">
+            <thead>
+            <tr>
+                <th>用户名称</th>
+                <th></th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="usersResultTable">
+
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    var static_url = 'http://10.1.0.84:8000/';
+    {#    var static_url='http://192.168.0.193:8001/'#}
+{#        var static_url = 'http://121.43.170.247:8000/';#}
+    $(document).ready(function () {
+        //隐藏信息输入框
+        $("#dialogId").hide();
+        $("#recordDialog").hide();
+        $("#usersDialog").hide();
+
+    });
+
+
+    function returnMobile(a) {
+        var mid = a;
+        $("#dialogId").dialog({
+            draggalbe: true,
+            minWidth: 400,
+            buttons: {
+                "确认": function () {
+
+                    $.ajax({
+                        url: static_url + 'toReturn/',
+                        type: 'POST',
+                        data: {u_token: '{{token}}', mid: mid},
+                        dataType: 'json',
+                        timeout: 10000,
+                        success: function (result) {
+
+                            location.reload()
+                            alert(result.message)
+                        }
+
+                    });
+                    $(this).dialog("destroy");
+                },
+                "取消": function () {
+                    $(this).dialog("destroy");
+                }
+            }
+        });
+    }
+
+    function borrowMobile(a, b) {
+        var mid = a;
+        var token = b;
+        $("#isBorrowdialogId").dialog({
+            draggalbe: true,
+            minWidth: 400,
+            buttons: {
+                "确认": function () {
+
+                    $.ajax({
+                        url: static_url + 'toBorrowNew/',
+                        type: 'POST',
+                        data: {u_token: '{{token}}', mid: mid, b_token: token},
+                        dataType: 'json',
+                        timeout: 10000,
+                        success: function (result) {
+                            location.reload()
+                            alert(result.message)
+                        }
+
+                    });
+                    $(this).dialog("destroy");
+                },
+                "取消": function () {
+                    $(this).dialog("destroy");
+                }
+            }
+        });
+    }
+
+    function getLocalTime(nS) {
+        return new Date(parseInt(nS)).toLocaleString().replace(/:\d{1,2}$/, ' ');
+    }
+
+
+    function mobileRecordList(a) {
+        var mid = a;
+        $.ajax({
+            url: static_url + 'getMobileBorroeRecord/',
+            type: 'POST',
+            data: {u_token: '{{token}}', mid: mid},
+            dataType: 'json',
+            timeout: 10000,
+            success: function (result) {
+
+                $("#resultTable").empty();
+                var data = result.mobileBorrowRecordList;
+                for (var i = 0; i < data.length; ++i) {
+                    var tr;
+                    tr = '<td>' + getLocalTime(data[i].BorrowTime) + '</td>' + '<td>' + '</td>' + '<td>' + data[i].BorrowPeopleName + '</td>' + '<td>' + data[i].ReturnPeopleName + '</td>';
+                    $('#resultTable').append('<tr>' + tr + '</tr>');
+                }
+
+                $("#recordDialog").dialog({
+                    draggalbe: true,
+                    minWidth: 600,
+                    buttons: {
+                        "取消": function () {
+                            $(this).dialog("destroy");
+                        }
+                    }
+                });
+
+
+            }
+
+        });
+    }
+
+
+    {# 用户列表展示#}
+    function usersList(a) {
+        var mid = a;
+        $.ajax({
+            url: static_url + 'getUserListInfo/',
+            type: 'POST',
+            data: {u_token: '{{token}}', mid: mid},
+            dataType: 'json',
+            timeout: 10000,
+            success: function (result) {
+
+                $("#usersResultTable").empty();
+                var data = result.usersList;
+
+                for (var i = 0; i < data.length; ++i) {
+                    var tr;
+                    tr = '<td>' + data[i].name + '</td>' + '<td>' + '</td>' +
+                            '<td><button id="borrow_btn" onclick="borrowMobile('
+                            + '\'' + mid + '\''
+                            + ','
+                            + '\'' + data[i].u_token + '\''
+                            + ')">借用</button></td>';
+                    $('#usersResultTable').append('<tr>' + tr + '</tr>');
+                }
+
+                $("#usersDialog").dialog({
+                    draggalbe: true,
+                    minWidth: 600,
+                    buttons: {
+                        "取消": function () {
+                            $(this).dialog("destroy");
+                        }
+                    }
+                });
+
+
+            }
+
+        });
+    }
+
+
+    {# 用户申请手机#}
+    function applyMobile(a) {
+        var mid = a;
+
+        $("#isApplydialogId").dialog({
+            draggalbe: true,
+            minWidth: 400,
+            buttons: {
+                "确认": function () {
+
+                    $.ajax({
+                        url: static_url + 'applyMobile/',
+                        type: 'POST',
+                        data: {u_token: '{{token}}', mid: mid},
+                        dataType: 'json',
+                        timeout: 10000,
+                        success: function (result) {
+                            location.reload()
+                            alert(result.message)
+                        }
+
+                    });
+                    $(this).dialog("destroy");
+                },
+                "取消": function () {
+                    $(this).dialog("destroy");
+                }
+            }
+        });
+    }
+
+
+    function agreeApplyBorrowMobile(a, b) {
+        var mid = a;
+        var u_id = b;
+        $("#isBorrowdialogId").dialog({
+            draggalbe: true,
+            minWidth: 400,
+            buttons: {
+                "确认": function () {
+
+                    $.ajax({
+                        url: static_url + 'allowApplyMobile/',
+                        type: 'POST',
+                        data: {u_token: '{{token}}', mid: mid, u_id: u_id},
+                        dataType: 'json',
+                        timeout: 10000,
+                        success: function (result) {
+                            location.reload()
+                            alert(result.message)
+                        }
+
+                    });
+                    $(this).dialog("destroy");
+                },
+                "拒绝": function () {
+
+                    $.ajax({
+                        url: static_url + 'refuesApplyMobile/',
+                        type: 'POST',
+                        data: {u_token: '{{token}}', mid: mid, u_id: u_id},
+                        dataType: 'json',
+                        timeout: 10000,
+                        success: function (result) {
+                            location.reload()
+                            alert(result.message)
+                        }
+
+                    });
+                    $(this).dialog("destroy");
+                },
+                "取消": function () {
+                    $(this).dialog("destroy");
+                }
+            }
+        });
+    }
+
+    $("#option_select").change(
+            function () {
+                var value = $(this).children('option:selected').val();
+                $.ajax({
+                    url: static_url + 'filterMobile/',
+                    type: 'POST',
+                    data: {u_token: '{{token}}', option: value},
+                    dataType: 'json',
+                    timeout: 10000,
+                    success: function (result) {
+                        $('#Showmobiles').empty();
+                        var data = result.mobiles;
+                        var identity = result.identity;
+                        for (var i = 0; i < data.length; ++i) {
+                            var html_start, html_diff, html_diff_1, html_end;
+                            html_start = '<div class="col-sm-6 col-md-4"><div class="thumbnail"><img src="../../static/images/tc233.jpg" alt="..."><div class="caption">';
+                            html_end = '<p><a href="#" class="btn btn-info" role="button"' +
+                                    'onclick="mobileRecordList(' + data[i].id + ')">借还记录</a></p> </div> </div></div>';
+                            html_diff = '<h3>' + data[i].modelType + '</h3><h4>系统：' + data[i].DType + '</h4><h4>版本号：' + data[i].SysVersion + '</h4>'
+                            if (data[i].BorrowStatus) {
+                                if (identity == 1) {
+                                    if (data[i].applyUserid == 0) {
+                                        html_diff_1 = '<p><a href="#" class="btn btn-primary" role="button" ' +
+                                                'onclick="applyMobile(' + data[i].id + ')"> 可借 </a></p>'
+                                    }
+                                    else {
+                                        html_diff_1 = '<p><a href="#" class="btn btn-danger" role="button"> 申请中 </a> ' +
+                                                '<a href="#" class="btn btn-default" role="button"> ' + data[i].applyUserName + ' </a> </p>'
+                                    }
+                                }
+                                else if (identity == 2) {
+                                    html_diff_1 = '<p><a href="#" class="btn btn-success" role="button" id="borrow_btn"' +
+                                            'onclick="usersList('+data[i].id+')"> 派机 </a>'
+                                    if (data[i].applyUserid != 0) {
+                                        html_diff_1 = html_diff_1 + ' <a href="#" class="btn btn-info" role="button" id="applying_btn"' +
+                                                'onclick="agreeApplyBorrowMobile(' + data[i].id + ',' + data[i].applyUserid + ')"> ' + data[i].applyUserName + '申请ing </a>'
+                                    }
+                                }
+                            }
+
+                            else {
+                                if (identity == 1) {
+                                    html_diff_1 = '<p><a href="#" class="btn btn-danger" role="button"> 已借 </a> ' +
+                                            '<a href="#" class="btn btn-default" role="button"> ' + data[i].BorrowPeopleName + ' </a>'
+                                }
+                                else if (identity == 2) {
+                                    html_diff_1 = '<p><a href="#" class="btn btn-danger" role="button" id="return_btn"' +
+                                            'onclick="returnMobile(' + data[i].id + ')"> 归还 </a>' +
+                                            ' <a href="#" class="btn btn-default" role="button"> ' + data[i].BorrowPeopleName + ' </a>'
+
+                                }
+                            }
+                            $('#Showmobiles').append(html_start + html_diff + html_diff_1 + html_end);
+
+                        }
+                        alert(result.message);
+                    },
+                    false:function (result) {
+                        alert(result.message);
+                    }
+
+                });
+            }
+    )
+
+</script>
+
+
+</body>
+<script type="text/javascript" src="../../static/js/vue.js"></script>
+</html>
