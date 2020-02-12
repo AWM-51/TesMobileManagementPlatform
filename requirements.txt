@@ -10,7 +10,7 @@ constantly==15.1.0
 cryptography==2.2.2
 cssselect==1.0.3
 cycler==0.10.0
-Django==2.0.6
+Django==2.2.10
 dominate==2.3.4
 Flask==1.0.2
 Flask-Bootstrap==3.3.7.1
