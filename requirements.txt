@@ -24,7 +24,7 @@ idna==2.7
 image==1.5.24
 incremental==17.5.0
 itsdangerous==1.1.0
-Jinja2==2.9.5
+Jinja2==2.11.3
 kiwisolver==1.0.1
 lxml==4.2.3
 MarkupSafe==1.0
